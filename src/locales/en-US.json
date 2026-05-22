@@ -75,10 +75,10 @@
     "search_success": "Search done",
     "comic_id_invalid": "Invalid Comic ID format",
     "enter_comic_id_or_url": "Please enter Comic ID or URL",
-    "download_all_search_results": "Download all search results ({total})",
+    "download_all_search_results": "Download undownloaded search results ({total})",
     "downloading_all_warning": "Batch enqueue is already running, please try again later",
     "download_all_no_result": "No search result to download",
-    "download_all_done": "Queued: {queued}, failed: {failed}, skipped: {skipped}"
+    "download_all_done": "Queued: {queued}, failed: {failed}, skipped downloaded/active: {skipped}"
   },
   "downloaded_pane": {
     "name": "Local",
