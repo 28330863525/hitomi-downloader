@@ -88,7 +88,7 @@ function sleep(ms: number): Promise<void> {
 
 function isActiveDownloadTask(comicId: number): boolean {
   const state = store.progresses.get(comicId)?.state
-  return state === 'Pending' || state === 'Downloading'
+  return state === 'Pending' || state === 'Downloading' || state === 'Paused'
 }
 
 async function downloadAllSearchResults() {
@@ -124,7 +124,13 @@ async function downloadAllSearchResults() {
           continue
         }
 
-        const taskResult = await commands.createDownloadTask(comicResult.data)
+        const comic = comicResult.data
+        if (comic.isDownloaded === true) {
+          skippedCount += 1
+          continue
+        }
+
+        const taskResult = await commands.createDownloadTask(comic)
         if (taskResult.status === 'error') {
           console.error(taskResult.error)
           failedCount += 1
