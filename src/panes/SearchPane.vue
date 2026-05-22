@@ -31,6 +31,7 @@ const {
 } = useSuggestion()
 
 const searching = ref<boolean>(false)
+const downloadingAllSearchResults = ref<boolean>(false)
 
 watch(
   () => store.searchResult,
@@ -79,6 +80,70 @@ async function handlePageChange(pageNum: number) {
   }
 
   store.searchResult = result.data
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => window.setTimeout(resolve, ms))
+}
+
+function isActiveDownloadTask(comicId: number): boolean {
+  const state = store.progresses.get(comicId)?.state
+  return state === 'Pending' || state === 'Downloading'
+}
+
+async function downloadAllSearchResults() {
+  if (downloadingAllSearchResults.value) {
+    message.warning(() => t('search_pane.downloading_all_warning'))
+    return
+  }
+
+  const ids = store.searchResult?.ids
+  if (ids === undefined || ids.length === 0) {
+    message.warning(() => t('search_pane.download_all_no_result'))
+    return
+  }
+
+  downloadingAllSearchResults.value = true
+
+  let queuedCount = 0
+  let failedCount = 0
+  let skippedCount = 0
+
+  try {
+    for (const comicId of ids) {
+      if (isActiveDownloadTask(comicId)) {
+        skippedCount += 1
+        continue
+      }
+
+      try {
+        const comicResult = await commands.getComic(comicId)
+        if (comicResult.status === 'error') {
+          console.error(comicResult.error)
+          failedCount += 1
+          continue
+        }
+
+        const taskResult = await commands.createDownloadTask(comicResult.data)
+        if (taskResult.status === 'error') {
+          console.error(taskResult.error)
+          failedCount += 1
+          continue
+        }
+
+        queuedCount += 1
+      } catch (err) {
+        console.error(err)
+        failedCount += 1
+      }
+
+      await sleep(150)
+    }
+
+    message.success(() => t('search_pane.download_all_done', { queued: queuedCount, failed: failedCount, skipped: skippedCount }))
+  } finally {
+    downloadingAllSearchResults.value = false
+  }
 }
 
 function getComicIdFromComicIdInput(): number | undefined {
@@ -273,6 +338,18 @@ defineExpose({ search })
         </template>
       </n-button>
     </n-input-group>
+
+    <n-button
+      v-if="store.searchResult !== undefined"
+      class="mx-2"
+      type="primary"
+      secondary
+      size="small"
+      :loading="downloadingAllSearchResults"
+      :disabled="store.searchResult.ids.length === 0"
+      @click="downloadAllSearchResults">
+      {{ t('search_pane.download_all_search_results', { total: store.searchResult.ids.length }) }}
+    </n-button>
 
     <div
       v-if="store.searchResult !== undefined"

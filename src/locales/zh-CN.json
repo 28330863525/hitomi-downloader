@@ -74,7 +74,11 @@
     "searching_warning": "有搜索正在进行，请稍后再试",
     "search_success": "搜索成功",
     "comic_id_invalid": "漫画ID格式错误",
-    "enter_comic_id_or_url": "请输入漫画ID或链接"
+    "enter_comic_id_or_url": "请输入漫画ID或链接",
+    "download_all_search_results": "一键下载全部搜索结果 ({total})",
+    "downloading_all_warning": "正在批量加入下载队列，请稍后再试",
+    "download_all_no_result": "没有可下载的搜索结果",
+    "download_all_done": "已加入队列：{queued}，失败：{failed}，跳过：{skipped}"
   },
   "downloaded_pane": {
     "name": "本地库存",
